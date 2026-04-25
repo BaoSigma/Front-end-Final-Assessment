@@ -1,47 +1,78 @@
-'use client';
-import React, { useState } from 'react';
-import { ChartContainer } from '@/components/molecules/ChartContainer';
-import { FilterInput } from '@/components/molecules/FilterInput';
-import { Button } from '@/components/atoms/Button';
-import { salesData } from '@/data/salesData';
-import { ChartType } from '@/types';
+"use client";
 
-export const SalesChart: React.FC = () => {
-  const [chartType, setChartType] = useState<ChartType>('bar');
-  const [threshold, setThreshold] = useState<number>(0);
+import { useState, useEffect } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  LineChart,
+  Line,
+} from "recharts";
 
-  const chartTypes: ChartType[] = ['bar', 'line', 'pie'];
+import { salesData } from "../../data/salesData";
+import Button from "../atoms/button";
+import ChartCard from "../molecules/ChartCard";
 
-  const handleThresholdChange = (value: number) => {
-    setThreshold(value);
-  };
+export default function SalesChart() {
+  const [type, setType] = useState("bar");
+  const [threshold, setThreshold] = useState(0);
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const filtered = salesData.filter(
+    (item) => Number(item.sales) > threshold
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex gap-2">
-          {chartTypes.map((type) => (
-            <Button
-              key={type}
-              onClick={() => setChartType(type)}
-              variant={chartType === type ? 'primary' : 'outline'}
-              active={chartType === type}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)} Chart
-            </Button>
-          ))}
-        </div>
-        <FilterInput
-          threshold={threshold}
-          onThresholdChange={handleThresholdChange}
-        />
-      </div>
-      <ChartContainer
-        data={salesData}
-        chartType={chartType}
-        threshold={threshold}
-        title={`Sales Comparison (2022-2024)`}
+    <ChartCard>
+      <h2 className="text-xl mb-4">Sales Chart</h2>
+
+      <input
+        type="number"
+        placeholder="Filter sales > ..."
+        onChange={(e) => setThreshold(Number(e.target.value))}
+        className="border p-2 mb-4"
       />
-    </div>
+
+      <div className="mb-4">
+        <Button label="Bar" onClick={() => setType("bar")} />
+        <Button label="Line" onClick={() => setType("line")} />
+      </div>
+
+      {type === "bar" && (
+        <BarChart width={500} height={300} data={filtered}>
+          <XAxis dataKey="year" />
+          <YAxis />
+          <Tooltip />
+          <Bar
+            dataKey="sales"
+            fill="#3b82f6"
+            isAnimationActive={false}
+          />
+        </BarChart>
+      )}
+
+      {type === "line" && (
+        <LineChart width={500} height={300} data={filtered}>
+          <XAxis dataKey="year" />
+          <YAxis />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="sales"
+            stroke="#10b981"
+            isAnimationActive={false}
+          />
+        </LineChart>
+      )}
+    </ChartCard>
   );
-};
+}

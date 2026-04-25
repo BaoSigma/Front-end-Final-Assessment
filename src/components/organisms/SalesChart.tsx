@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 import { salesData } from "../../data/salesData";
-import Button from "../atoms/button";
+import Button from "../atoms/Button";
 import ChartCard from "../molecules/ChartCard";
 
 export default function SalesChart() {
